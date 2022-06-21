@@ -1,6 +1,5 @@
 package com.yb.part4_chapter07
 
-import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,6 +12,9 @@ import com.yb.part4_chapter07.databinding.ItemPhotoBinding
 class PhotoAdapter : RecyclerView.Adapter<PhotoAdapter.ViewHolder>() {
 
     var photos: List<PhotoResponse> = emptyList()
+    var onClickPhoto: (PhotoResponse) -> Unit = {
+
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
         ViewHolder(ItemPhotoBinding.inflate(LayoutInflater.from(parent.context), parent, false))
@@ -27,6 +29,12 @@ class PhotoAdapter : RecyclerView.Adapter<PhotoAdapter.ViewHolder>() {
 
     inner class ViewHolder(private val binding: ItemPhotoBinding) :
         RecyclerView.ViewHolder(binding.root) {
+
+        init {
+            binding.root.setOnClickListener {
+                onClickPhoto(photos[adapterPosition])
+            }
+        }
 
         fun bind(photo: PhotoResponse) = with(binding) {
             val dimensionRatio = photo.height / photo.width.toFloat()
