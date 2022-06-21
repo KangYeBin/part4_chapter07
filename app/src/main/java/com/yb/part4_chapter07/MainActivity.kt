@@ -1,5 +1,6 @@
 package com.yb.part4_chapter07
 
+import android.app.WallpaperManager
 import android.content.ContentValues
 import android.content.Context
 import android.content.pm.PackageManager
@@ -9,13 +10,11 @@ import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Log
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
-import androidx.core.content.getSystemService
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -29,8 +28,8 @@ import com.yb.part4_chapter07.databinding.ActivityMainBinding
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import java.io.IOException
 import java.lang.Exception
-import java.util.jar.Manifest
 
 class MainActivity : AppCompatActivity() {
 
@@ -169,6 +168,25 @@ class MainActivity : AppCompatActivity() {
                         transition: Transition<in Bitmap>?,
                     ) {
                         saveBitmapToMediaStore(resource)
+
+                        val wallpaperManager = WallpaperManager.getInstance(this@MainActivity)
+                        val snackBar = Snackbar.make(binding.root, "다운로드 완료", Snackbar.LENGTH_SHORT)
+
+                        if (wallpaperManager.isWallpaperSupported &&
+                            (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N &&
+                                    wallpaperManager.isSetWallpaperAllowed)
+                        ) {
+                            snackBar.setAction("배경화면으로 저장") {
+                                try {
+                                    wallpaperManager.setBitmap(resource)
+                                } catch (exception: IOException) {
+                                    Snackbar.make(binding.root, "배경화면 저장 실패", Snackbar.LENGTH_SHORT)
+                                        .show()
+                                }
+                            }
+                            snackBar.duration = Snackbar.LENGTH_INDEFINITE
+                        }
+                        snackBar.show()
                     }
 
                     override fun onLoadStarted(placeholder: Drawable?) {
@@ -218,8 +236,6 @@ class MainActivity : AppCompatActivity() {
             imageDetails.put(MediaStore.Images.Media.IS_PENDING, 0)
             resolver.update(imageUri, imageDetails, null, null)
         }
-
-        Snackbar.make(binding.root, "다운로드 완료", Snackbar.LENGTH_SHORT).show()
     }
 
     companion object {
